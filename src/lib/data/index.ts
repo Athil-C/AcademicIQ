@@ -7,17 +7,20 @@ import { IContentRepository } from "./content-repository";
 import { SupabaseContentRepository } from "./supabase-content-repository";
 import { DemoContentRepository } from "./demo-content-repository";
 
-let repositoryInstance: IContentRepository | null = null;
+declare global {
+  // eslint-disable-next-line no-var
+  var __academiq_repo_instance__: IContentRepository | undefined;
+}
 
 export function getContentRepository(): IContentRepository {
-  if (!repositoryInstance) {
+  if (!globalThis.__academiq_repo_instance__) {
     if (isSupabaseConfigured()) {
-      repositoryInstance = new SupabaseContentRepository();
+      globalThis.__academiq_repo_instance__ = new SupabaseContentRepository();
     } else {
-      repositoryInstance = new DemoContentRepository();
+      globalThis.__academiq_repo_instance__ = new DemoContentRepository();
     }
   }
-  return repositoryInstance;
+  return globalThis.__academiq_repo_instance__;
 }
 
 export function getDataMode(): "CONNECTED" | "DEMO" {

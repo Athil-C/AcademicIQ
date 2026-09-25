@@ -22,8 +22,18 @@ import {
 } from "./content-repository";
 import { DemoContentRepository } from "./demo-content-repository";
 
+declare global {
+  // eslint-disable-next-line no-var
+  var __academiq_demo_fallback_repo__: DemoContentRepository | undefined;
+}
+
 export class SupabaseContentRepository implements IContentRepository {
-  private fallback = new DemoContentRepository();
+  private get fallback(): DemoContentRepository {
+    if (!globalThis.__academiq_demo_fallback_repo__) {
+      globalThis.__academiq_demo_fallback_repo__ = new DemoContentRepository();
+    }
+    return globalThis.__academiq_demo_fallback_repo__;
+  }
 
   private getClient() {
     return createClient();

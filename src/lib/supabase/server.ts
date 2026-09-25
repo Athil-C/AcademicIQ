@@ -10,7 +10,7 @@ export async function createClient() {
     : "https://placeholder.supabase.co";
 
   const key = isSupabaseConfigured()
-    ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    ? (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)!
     : "placeholder-anon-key";
 
   return createServerClient(url, key, {

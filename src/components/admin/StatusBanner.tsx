@@ -1,4 +1,4 @@
-import { getDataMode } from "@/lib/data";
+import { getDataMode } from "@/lib/supabase/config";
 import { AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 

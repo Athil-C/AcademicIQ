@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getContentRepository } from "@/lib/data";
 
 export async function GET(
@@ -27,6 +28,11 @@ export async function PUT(
     const body = await request.json();
     const repository = getContentRepository();
     const updated = await repository.updateContent(id, body, body);
+    try {
+      revalidatePath("/", "layout");
+    } catch {
+      // ignore
+    }
     return NextResponse.json({ success: true, item: updated });
   } catch {
     return NextResponse.json({ error: "Failed to update item" }, { status: 500 });
@@ -41,6 +47,11 @@ export async function DELETE(
     const { id } = await params;
     const repository = getContentRepository();
     const deleted = await repository.deleteContent(id);
+    try {
+      revalidatePath("/", "layout");
+    } catch {
+      // ignore
+    }
     return NextResponse.json({ success: deleted });
   } catch {
     return NextResponse.json({ error: "Failed to delete item" }, { status: 500 });

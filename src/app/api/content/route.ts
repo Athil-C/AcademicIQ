@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getContentRepository } from "@/lib/data";
 import { ContentFilterParams } from "@/types";
 
@@ -43,6 +44,11 @@ export async function POST(request: NextRequest) {
 
     const repository = getContentRepository();
     const created = await repository.createContent(body, body);
+    try {
+      revalidatePath("/", "layout");
+    } catch {
+      // ignore
+    }
     return NextResponse.json({ success: true, item: created });
   } catch {
     return NextResponse.json(

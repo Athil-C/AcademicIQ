@@ -5,6 +5,7 @@ import { getContentRepository } from "@/lib/data";
 import { calculateDeadline, formatAcademicDate } from "@/lib/utils/deadline";
 import { getContentPath } from "@/lib/utils/routes";
 import { FullContentItem } from "@/types";
+import { HeroSearch } from "@/components/search/HeroSearch";
 import {
   Search,
   ArrowRight,
@@ -26,6 +27,9 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Image from "next/image";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function HomePage() {
   const repository = getContentRepository();
@@ -160,24 +164,24 @@ export default async function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
               {/* Left Column (Span 7): Announcement, Editorial Headline, Multi-scope Search, Trending, Metrics */}
-              <div className="lg:col-span-7 space-y-6">
+              <div className="lg:col-span-7 space-y-5 sm:space-y-6">
                 {/* Live Announcement Pill */}
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200/90 text-xs font-medium text-slate-800 shadow-2xs">
-                  <span className="flex h-2 w-2 relative">
+                <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white/95 backdrop-blur-xs border border-blue-200/60 sm:border-slate-200/90 text-[11px] sm:text-xs font-medium text-slate-800 shadow-2xs max-w-full">
+                  <span className="flex h-2 w-2 shrink-0 relative">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
                   </span>
-                  <span className="font-semibold text-slate-900">SSRF & AcademIQ 2026 Academic Network</span>
-                  <span className="text-slate-300">•</span>
-                  <Link href="/communities/ssrf" className="text-blue-700 hover:text-blue-800 hover:underline flex items-center gap-1 font-semibold">
+                  <span className="font-semibold text-slate-900 truncate">SSRF & AcademIQ 2026 Academic Network</span>
+                  <span className="text-slate-300 shrink-0">•</span>
+                  <Link href="/communities/ssrf" className="text-blue-700 hover:text-blue-800 hover:underline flex items-center gap-0.5 sm:gap-1 font-semibold shrink-0">
                     <span>Explore Hub</span>
                     <ArrowRight className="w-3 h-3" />
                   </Link>
                 </div>
 
                 {/* Editorial Headline */}
-                <div className="space-y-3">
-                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-950 font-serif tracking-tight leading-[1.12]">
+                <div className="space-y-2.5 sm:space-y-3">
+                  <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-950 font-serif tracking-tight leading-[1.18] sm:leading-[1.12]">
                     Discover Research. <br className="hidden sm:inline" />
                     Find Opportunities. <br className="hidden sm:inline" />
                     <span className="text-blue-700 bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-900 bg-clip-text text-transparent">
@@ -185,99 +189,108 @@ export default async function HomePage() {
                     </span>
                   </h1>
 
-                  <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl">
+                  <p className="text-xs sm:text-base text-slate-600 leading-relaxed max-w-xl">
                     AcademIQ brings peer-reviewed research papers, active calls for papers, international
                     conferences, fellowships, and academic grants together in one structured network.
                   </p>
                 </div>
 
-                {/* Enhanced Multi-Scope Search Bar */}
-                <div className="bg-white p-2 sm:p-2.5 rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200">
-                  <form action="/search" method="GET" className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                    {/* Category Scope Selector */}
-                    <div className="relative shrink-0">
-                      <select
-                        name="type"
-                        aria-label="Search scope"
-                        className="w-full sm:w-auto bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-2.5 rounded-xl border border-slate-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600/20"
-                      >
-                        <option value="">All Categories</option>
-                        <option value="RESEARCH_PAPER">Research Papers</option>
-                        <option value="CFP">Calls for Papers</option>
-                        <option value="CONFERENCE">Conferences</option>
-                        <option value="FUNDING">Grants & Funding</option>
-                        <option value="FELLOWSHIP">Fellowships</option>
-                        <option value="WORKSHOP">Workshops</option>
-                      </select>
-                    </div>
-
-                    {/* Search Input */}
-                    <div className="relative flex-1 flex items-center">
-                      <Search className="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
-                      <input
-                        type="text"
-                        name="q"
-                        placeholder="Search papers, CFPs, conferences, funding..."
-                        className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm text-slate-900 placeholder-slate-400 bg-transparent focus:outline-none"
-                      />
-                    </div>
-
-                    {/* Submit Action */}
-                    <button
-                      type="submit"
-                      className="px-5 py-2.5 bg-slate-950 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-sm shrink-0"
-                    >
-                      <span>Search</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </form>
-                </div>
+                {/* Enhanced Multi-Scope Search Bar (Mobile Carousel Tabs + Preserved Desktop Form) */}
+                <HeroSearch />
 
                 {/* Trending Academic Keywords */}
-                <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mr-1">Trending:</span>
-                  {[
-                    { label: "Digital Governance", href: "/search?q=governance" },
-                    { label: "AI & Society", href: "/search?q=AI" },
-                    { label: "Climate Policy", href: "/search?q=climate" },
-                    { label: "Econometrics", href: "/search?q=econometrics" },
-                    { label: "Horizon Europe", href: "/funding?q=horizon" },
-                  ].map((tag) => (
-                    <Link
-                      key={tag.label}
-                      href={tag.href}
-                      className="px-2.5 py-1 rounded-md bg-white hover:bg-blue-50 border border-slate-200/90 hover:border-blue-200 text-slate-600 hover:text-blue-700 text-[11px] font-medium transition shadow-2xs"
-                    >
-                      #{tag.label}
-                    </Link>
-                  ))}
+                <div className="pt-0.5">
+                  <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar sm:flex-wrap text-xs pb-1 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0">
+                    <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-0.5">Trending:</span>
+                    {[
+                      { label: "Digital Governance", href: "/search?q=governance" },
+                      { label: "AI & Society", href: "/search?q=AI" },
+                      { label: "Climate Policy", href: "/search?q=climate" },
+                      { label: "Econometrics", href: "/search?q=econometrics" },
+                      { label: "Horizon Europe", href: "/funding?q=horizon" },
+                    ].map((tag) => (
+                      <Link
+                        key={tag.label}
+                        href={tag.href}
+                        className="shrink-0 px-2.5 py-1 rounded-full sm:rounded-md bg-white hover:bg-blue-50 border border-slate-200/90 hover:border-blue-200 text-slate-600 hover:text-blue-700 text-[11px] font-medium transition shadow-2xs active:scale-95"
+                      >
+                        #{tag.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Trust & Network Metrics */}
-                <div className="pt-6 border-t border-slate-200/80 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div>
-                    <div className="text-2xl font-bold font-serif text-slate-950">12,400+</div>
-                    <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Publications</div>
+                <div className="pt-5 sm:pt-6 border-t border-slate-200/80">
+                  {/* Mobile Metrics View (Ergonomic Micro-Card Grid) */}
+                  <div className="grid grid-cols-2 sm:hidden gap-2.5">
+                    <div className="bg-white/90 border border-slate-200/90 rounded-xl p-2.5 flex items-center gap-2.5 shadow-2xs">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
+                        <BookOpen className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-base font-bold font-serif text-slate-950 leading-tight">12,400+</div>
+                        <div className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Publications</div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white/90 border border-slate-200/90 rounded-xl p-2.5 flex items-center gap-2.5 shadow-2xs">
+                      <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+                        <Globe className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-base font-bold font-serif text-slate-950 leading-tight">850+</div>
+                        <div className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Active CFPs</div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white/90 border border-slate-200/90 rounded-xl p-2.5 flex items-center gap-2.5 shadow-2xs">
+                      <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-700 flex items-center justify-center shrink-0">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-base font-bold font-serif text-slate-950 leading-tight">1,200+</div>
+                        <div className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Conferences</div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white/90 border border-slate-200/90 rounded-xl p-2.5 flex items-center gap-2.5 shadow-2xs">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+                        <Award className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-base font-bold font-serif text-slate-950 leading-tight">150+</div>
+                        <div className="text-[9px] uppercase font-bold text-slate-500 tracking-wider">Countries</div>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold font-serif text-slate-950">850+</div>
-                    <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Active CFPs</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold font-serif text-slate-950">1,200+</div>
-                    <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Conferences</div>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold font-serif text-slate-950">150+</div>
-                    <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Countries</div>
+
+                  {/* Desktop Metrics View (100% Original Preserved) */}
+                  <div className="hidden sm:grid sm:grid-cols-4 gap-4">
+                    <div>
+                      <div className="text-2xl font-bold font-serif text-slate-950">12,400+</div>
+                      <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Publications</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold font-serif text-slate-950">850+</div>
+                      <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Active CFPs</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold font-serif text-slate-950">1,200+</div>
+                      <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Conferences</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold font-serif text-slate-950">150+</div>
+                      <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Countries</div>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Right Column (Span 5): Live Scholarly Showcase Card Stack */}
-              <div className="lg:col-span-5 relative">
+              <div className="lg:col-span-5 relative mt-6 lg:mt-0">
                 {/* Main Featured Paper Card */}
-                <div className="relative bg-white rounded-2xl border border-slate-200 shadow-2xl p-6 sm:p-7 space-y-4">
+                <div className="relative bg-white rounded-2xl border border-slate-200 shadow-xl sm:shadow-2xl p-5 sm:p-7 space-y-4">
                   {/* Top Badges */}
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
@@ -294,7 +307,7 @@ export default async function HomePage() {
                     <div className="text-[11px] font-semibold text-blue-700 uppercase tracking-tight">
                       Journal of Political Science • Vol. 42
                     </div>
-                    <h3 className="text-lg font-bold font-serif text-slate-950 leading-snug">
+                    <h3 className="text-base sm:text-lg font-bold font-serif text-slate-950 leading-snug">
                       <Link href="/research-papers/digital-platforms-and-democratic-engagement" className="hover:text-blue-700 transition">
                         Digital Platforms and Democratic Engagement: A Global Perspective
                       </Link>
@@ -328,7 +341,26 @@ export default async function HomePage() {
                   </div>
                 </div>
 
-                {/* Floating Urgent Deadline Card (Bottom Right overlap) */}
+                {/* Mobile Deadline Alert Bar (Visible on mobile, where absolute floating badges are hidden) */}
+                <div className="block sm:hidden mt-3 p-3 bg-white/95 border border-amber-200/90 rounded-xl shadow-xs space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-amber-600" />
+                      Closing Soon
+                    </span>
+                    <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                      7 days left
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-bold text-slate-900 font-serif line-clamp-1">
+                    18th Int'l Conference on Democratic Innovations
+                  </h4>
+                  <p className="text-[10px] text-slate-500">
+                    Deadline: 30 April 2026 • Barcelona, Spain
+                  </p>
+                </div>
+
+                {/* Floating Urgent Deadline Card (Bottom Right overlap) - Desktop Only */}
                 <div className="hidden sm:block absolute -bottom-6 -left-6 bg-white/95 backdrop-blur-md rounded-xl border border-amber-200 shadow-xl p-4 max-w-xs space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 flex items-center gap-1">
@@ -347,7 +379,7 @@ export default async function HomePage() {
                   </p>
                 </div>
 
-                {/* Floating Verified Badge (Top Right overlap) */}
+                {/* Floating Verified Badge (Top Right overlap) - Desktop Only */}
                 <div className="hidden sm:flex absolute -top-4 -right-4 bg-slate-900 text-white rounded-xl shadow-lg px-3.5 py-2 items-center gap-2 text-xs font-semibold">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                   <span>150+ Partner Institutions</span>
@@ -360,9 +392,9 @@ export default async function HomePage() {
         {/* ================================================================= */}
         {/* 2. EXPLORE SECTION (3 MAJOR VISUAL HUBS) */}
         {/* ================================================================= */}
-        <section className="py-16 bg-white border-b border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            <div className="text-center max-w-2xl mx-auto space-y-2">
+        <section className="py-10 sm:py-16 bg-white border-b border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
+            <div className="text-center max-w-2xl mx-auto space-y-1.5 sm:space-y-2">
               <h2 className="text-2xl sm:text-3xl font-bold font-serif text-slate-950">
                 Explore the Network
               </h2>
@@ -371,15 +403,15 @@ export default async function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
               {/* Hub 1: Research */}
-              <div className="group bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 hover:border-blue-300 p-8 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between">
-                <div className="space-y-4">
-                  <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <BookOpen className="w-6 h-6" />
+              <div className="group bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 hover:border-blue-300 p-5 sm:p-8 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold font-serif text-slate-950 group-hover:text-blue-700 transition">
+                    <h3 className="text-lg sm:text-xl font-bold font-serif text-slate-950 group-hover:text-blue-700 transition">
                       Research
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-600 mt-1">
@@ -409,7 +441,7 @@ export default async function HomePage() {
                   </ul>
                 </div>
 
-                <div className="pt-6">
+                <div className="pt-4 sm:pt-6">
                   <Link
                     href="/research"
                     className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 group-hover:text-blue-800"
@@ -421,13 +453,13 @@ export default async function HomePage() {
               </div>
 
               {/* Hub 2: Opportunities */}
-              <div className="group bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 hover:border-teal-300 p-8 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between">
-                <div className="space-y-4">
-                  <div className="w-12 h-12 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <Compass className="w-6 h-6" />
+              <div className="group bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 hover:border-teal-300 p-5 sm:p-8 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Compass className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold font-serif text-slate-950 group-hover:text-teal-700 transition">
+                    <h3 className="text-lg sm:text-xl font-bold font-serif text-slate-950 group-hover:text-teal-700 transition">
                       Opportunities
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-600 mt-1">
@@ -457,7 +489,7 @@ export default async function HomePage() {
                   </ul>
                 </div>
 
-                <div className="pt-6">
+                <div className="pt-4 sm:pt-6">
                   <Link
                     href="/opportunities"
                     className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 group-hover:text-teal-800"
@@ -469,13 +501,13 @@ export default async function HomePage() {
               </div>
 
               {/* Hub 3: Events */}
-              <div className="group bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 hover:border-sky-300 p-8 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between">
-                <div className="space-y-4">
-                  <div className="w-12 h-12 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    <Calendar className="w-6 h-6" />
+              <div className="group bg-slate-50 hover:bg-white rounded-2xl border border-slate-200 hover:border-sky-300 p-5 sm:p-8 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold font-serif text-slate-950 group-hover:text-sky-700 transition">
+                    <h3 className="text-lg sm:text-xl font-bold font-serif text-slate-950 group-hover:text-sky-700 transition">
                       Events
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-600 mt-1">
@@ -505,7 +537,7 @@ export default async function HomePage() {
                   </ul>
                 </div>
 
-                <div className="pt-6">
+                <div className="pt-4 sm:pt-6">
                   <Link
                     href="/events"
                     className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-700 group-hover:text-sky-800"
@@ -522,7 +554,7 @@ export default async function HomePage() {
         {/* ================================================================= */}
         {/* 3. LATEST SECTION (ONE UNIFIED RESEARCH & ACADEMIC FEED) */}
         {/* ================================================================= */}
-        <section className="py-16 bg-slate-50/70 border-b border-slate-200">
+        <section className="py-10 sm:py-16 bg-slate-50/70 border-b border-slate-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -616,7 +648,7 @@ export default async function HomePage() {
         {/* 4. CLOSING SOON (DEADLINE-BASED OPPORTUNITIES) */}
         {/* ================================================================= */}
         {closingSoon.length > 0 && (
-          <section className="py-16 bg-white border-b border-slate-200">
+          <section className="py-10 sm:py-16 bg-white border-b border-slate-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -701,7 +733,7 @@ export default async function HomePage() {
         {/* ================================================================= */}
         {/* 5. SSRF SPOTLIGHT (SOCIAL SCIENCES RESEARCH FORUM) */}
         {/* ================================================================= */}
-        <section className="py-16 bg-slate-50 border-b border-slate-200">
+        <section className="py-10 sm:py-16 bg-slate-50 border-b border-slate-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div className="space-y-2 max-w-2xl">

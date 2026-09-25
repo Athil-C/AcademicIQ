@@ -37,15 +37,17 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (prevIsOpen !== isOpen) {
+    setPrevIsOpen(isOpen);
     if (!isOpen) {
       setQuery("");
       setResults([]);
-      return;
     }
+  }
 
-    if (!query.trim()) {
-      setResults([]);
+  useEffect(() => {
+    if (!isOpen || !query.trim()) {
       return;
     }
 

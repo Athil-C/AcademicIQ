@@ -353,19 +353,37 @@ export function AdminContentTable({ initialTypeFilter }: AdminContentTableProps)
                       </td>
 
                       <td className="py-3 px-4 whitespace-nowrap">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
-                            item.status === "PUBLISHED"
-                              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                              : item.status === "REVIEW"
-                              ? "bg-amber-50 text-amber-800 border-amber-200"
-                              : item.status === "ARCHIVED"
-                              ? "bg-slate-100 text-slate-600 border-slate-200"
-                              : "bg-slate-50 text-slate-700 border-slate-300"
-                          }`}
-                        >
-                          {item.status}
-                        </span>
+                        <div className="flex flex-col items-start gap-1">
+                          <select
+                            value={item.status}
+                            onChange={(e) => handleToggleStatus(item, e.target.value as ContentStatus)}
+                            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border cursor-pointer focus:outline-hidden transition ${
+                              item.status === "PUBLISHED"
+                                ? "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100"
+                                : item.status === "REVIEW"
+                                ? "bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100"
+                                : item.status === "ARCHIVED"
+                                ? "bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200"
+                                : "bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100"
+                            }`}
+                            title="Click to change publication status"
+                          >
+                            <option value="PUBLISHED">PUBLISHED (Live)</option>
+                            <option value="DRAFT">DRAFT (Hidden)</option>
+                            <option value="REVIEW">IN REVIEW</option>
+                            <option value="ARCHIVED">ARCHIVED</option>
+                          </select>
+                          {item.status !== "PUBLISHED" && (
+                            <button
+                              type="button"
+                              onClick={() => handleToggleStatus(item, "PUBLISHED")}
+                              className="text-[10px] text-blue-600 hover:text-blue-800 font-semibold hover:underline flex items-center gap-1"
+                              title="Immediately make live on public interface"
+                            >
+                              ⚡ Publish to UI
+                            </button>
+                          )}
+                        </div>
                       </td>
 
                       <td className="py-3 px-4 whitespace-nowrap">

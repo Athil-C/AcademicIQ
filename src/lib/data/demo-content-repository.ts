@@ -19,6 +19,7 @@ import {
   DashboardStats,
   MediaUsageResult,
 } from "./content-repository";
+import { loadPersistentContent, savePersistentContent } from "./persistent-store";
 
 export const DEMO_CATEGORIES: Category[] = [
   { id: "c1", name: "Social Sciences", slug: "social-sciences", description: "Inquiry into society, institutions, and community.", icon: "Users" },
@@ -982,7 +983,14 @@ export const DEMO_AUDIT_LOGS: AuditLog[] = [
 
 // Singleton in-memory demo content repository
 export class DemoContentRepository implements IContentRepository {
-  private content: FullContentItem[] = [...INITIAL_DEMO_CONTENT];
+  private get content(): FullContentItem[] {
+    return loadPersistentContent(INITIAL_DEMO_CONTENT);
+  }
+
+  private set content(items: FullContentItem[]) {
+    savePersistentContent(items);
+  }
+
   private media: MediaItem[] = [...DEMO_MEDIA];
   private auditLogs: AuditLog[] = [...DEMO_AUDIT_LOGS];
   private subscribers: Set<string> = new Set(["scholar@harvard.edu", "researcher@ox.ac.uk"]);
@@ -1161,75 +1169,107 @@ export class DemoContentRepository implements IContentRepository {
   }
 
   async createContent(data: Partial<FullContentItem>, specData: Record<string, unknown> = {}): Promise<FullContentItem> {
+    const matchedCategory =
+      DEMO_CATEGORIES.find((c) => c.id === data.category_id || c.slug === data.category_id) || DEMO_CATEGORIES[0];
+    const matchedOrg =
+      DEMO_ORGANIZATIONS.find((o) => o.id === data.organization_id || o.slug === data.organization_id) || DEMO_ORGANIZATIONS[0];
+
     const newItem: FullContentItem = {
-      id: `demo-${Date.now()}`,
+      id: data.id || `demo-${Date.now()}`,
       title: data.title || "Untitled Academic Item",
-      slug: data.slug || `demo-item-${Date.now()}`,
+      slug: data.slug || `academic-item-${Date.now()}`,
       short_description: data.short_description || "",
       content: data.content || "",
       content_type: data.content_type || "ARTICLE",
       status: data.status || "DRAFT",
-      featured: data.featured || false,
-      category_id: data.category_id || DEMO_CATEGORIES[0].id,
-      category: DEMO_CATEGORIES.find((c) => c.id === data.category_id) || DEMO_CATEGORIES[0],
-      organization_id: data.organization_id || DEMO_ORGANIZATIONS[0].id,
-      organization: DEMO_ORGANIZATIONS.find((o) => o.id === data.organization_id) || DEMO_ORGANIZATIONS[0],
+      featured: Boolean(data.featured),
+      category_id: matchedCategory.id,
+      category: matchedCategory,
+      organization_id: matchedOrg.id,
+      organization: matchedOrg,
       country: data.country || "Global",
       location: data.location || "",
       cover_image_url: data.cover_image_url || "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=1200&auto=format&fit=crop",
-      published_at: data.status === "PUBLISHED" ? new Date().toISOString() : null,
-      created_at: new Date().toISOString(),
+      published_at: data.status === "PUBLISHED" ? (data.published_at || new Date().toISOString()) : null,
+      created_at: data.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      authors: data.authors && data.authors.length > 0 ? data.authors : [DEMO_AUTHORS[0]],
+      tags: data.tags || [],
       ...specData,
     };
 
-    this.content.unshift(newItem);
+    const list = [...this.content];
+    list.unshift(newItem);
+    this.content = list;
+
     await this.addAuditLog("CONTENT_CREATE", newItem.content_type, newItem.id, { title: newItem.title });
     return newItem;
   }
 
   async updateContent(id: string, data: Partial<FullContentItem>, specData: Record<string, unknown> = {}): Promise<FullContentItem> {
-    const idx = this.content.findIndex((c) => c.id === id);
+    const list = [...this.content];
+    const idx = list.findIndex((c) => c.id === id);
     if (idx === -1) throw new Error(`Content item ${id} not found.`);
 
-    const existing = this.content[idx];
+    const existing = list[idx];
+    const matchedCategory = data.category_id
+      ? DEMO_CATEGORIES.find((c) => c.id === data.category_id || c.slug === data.category_id) || existing.category
+      : existing.category;
+    const matchedOrg = data.organization_id
+      ? DEMO_ORGANIZATIONS.find((o) => o.id === data.organization_id || o.slug === data.organization_id) || existing.organization
+      : existing.organization;
+
     const updated: FullContentItem = {
       ...existing,
       ...data,
       ...specData,
+      category: matchedCategory,
+      organization: matchedOrg,
+      published_at: data.status === "PUBLISHED" && !existing.published_at ? new Date().toISOString() : existing.published_at,
       updated_at: new Date().toISOString(),
     };
-    this.content[idx] = updated;
+    list[idx] = updated;
+    this.content = list;
 
     await this.addAuditLog("CONTENT_UPDATE", updated.content_type, updated.id, { title: updated.title });
     return updated;
   }
 
   async deleteContent(id: string): Promise<boolean> {
-    const idx = this.content.findIndex((c) => c.id === id);
+    const list = [...this.content];
+    const idx = list.findIndex((c) => c.id === id);
     if (idx === -1) return false;
-    const removed = this.content.splice(idx, 1)[0];
+    const removed = list.splice(idx, 1)[0];
+    this.content = list;
     await this.addAuditLog("CONTENT_DELETE", removed.content_type, removed.id, { title: removed.title });
     return true;
   }
 
   async updateContentStatus(id: string, status: ContentStatus): Promise<boolean> {
-    const item = this.content.find((c) => c.id === id);
-    if (!item) return false;
+    const list = [...this.content];
+    const idx = list.findIndex((c) => c.id === id);
+    if (idx === -1) return false;
+    const item = { ...list[idx] };
     item.status = status;
     if (status === "PUBLISHED" && !item.published_at) {
       item.published_at = new Date().toISOString();
     }
     item.updated_at = new Date().toISOString();
+    list[idx] = item;
+    this.content = list;
     await this.addAuditLog("CONTENT_STATUS_CHANGE", item.content_type, item.id, { newStatus: status });
     return true;
   }
 
   async toggleFeatured(id: string, featured: boolean): Promise<boolean> {
-    const item = this.content.find((c) => c.id === id);
-    if (!item) return false;
+    const list = [...this.content];
+    const idx = list.findIndex((c) => c.id === id);
+    if (idx === -1) return false;
+    const item = { ...list[idx] };
     item.featured = featured;
     item.updated_at = new Date().toISOString();
+    list[idx] = item;
+    this.content = list;
     return true;
   }
 

@@ -59,11 +59,13 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close dropdown on route change
-  useEffect(() => {
+  // Close dropdown on route change without triggering useEffect setState warnings
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setOpenDropdown(null);
     setIsMobileMenuOpen(false);
-  }, [pathname]);
+  }
 
   const navHubs: NavHub[] = [
     {
@@ -249,14 +251,15 @@ export function Navbar() {
             </nav>
 
             {/* Right Action Tools */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2 sm:gap-2.5">
               {/* Quick Search Button */}
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-900 hover:bg-slate-100 text-xs transition cursor-pointer"
+                className="flex items-center justify-center sm:justify-start gap-2 h-9 w-9 sm:w-auto sm:px-3 sm:py-1.5 rounded-xl sm:rounded-lg border border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-900 hover:bg-slate-100 text-xs transition active:scale-95 cursor-pointer"
                 title="Search AcademIQ (Cmd + K)"
+                aria-label="Search AcademIQ"
               >
-                <Search className="w-4 h-4 text-slate-400" />
+                <Search className="w-4 h-4 text-slate-500 sm:text-slate-400" />
                 <span className="hidden sm:inline">Search...</span>
                 <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono font-medium text-slate-400 bg-white border border-slate-200 rounded-sm">
                   ⌘K
@@ -275,7 +278,7 @@ export function Navbar() {
               {/* Mobile menu trigger */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-md text-slate-600 hover:text-slate-950 hover:bg-slate-100 lg:hidden"
+                className="h-9 w-9 flex items-center justify-center rounded-xl text-slate-700 hover:text-slate-950 hover:bg-slate-100 border border-slate-200 active:scale-95 transition-all lg:hidden cursor-pointer"
                 aria-label="Toggle Navigation Menu"
               >
                 {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -286,38 +289,64 @@ export function Navbar() {
 
         {/* Mobile Navigation Drawer */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-2 shadow-lg max-h-[85vh] overflow-y-auto animate-in slide-in-from-top-2 duration-150">
-            {navHubs.map((hub) => (
-              <div key={hub.label} className="border-b border-slate-100 pb-2">
-                <Link
-                  href={hub.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-2 py-1.5 text-sm font-bold text-slate-900 hover:text-blue-700"
-                >
-                  {hub.label}
-                </Link>
-                {hub.items && (
-                  <div className="pl-3 space-y-1 pt-1">
-                    {hub.items.map((item) => (
-                      <Link
-                        key={item.label}
-                        href={item.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="block px-2 py-1 text-xs text-slate-600 hover:text-blue-700 hover:bg-slate-50 rounded"
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+          <div className="lg:hidden border-t border-slate-200 bg-white/95 backdrop-blur-xl px-4 pt-3 pb-6 space-y-3 shadow-xl max-h-[85vh] overflow-y-auto animate-in slide-in-from-top-2 duration-150">
+            {/* Mobile Quick Search Bar inside drawer */}
+            <div className="pb-1">
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsSearchOpen(true);
+                }}
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-500 font-medium active:scale-[0.99] transition"
+              >
+                <div className="flex items-center gap-2">
+                  <Search className="w-4 h-4 text-blue-600" />
+                  <span>Search all papers, CFPs, grants...</span>
+                </div>
+                <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/60">
+                  Tap to search
+                </span>
+              </button>
+            </div>
 
-            <div className="pt-2 flex items-center justify-between text-xs text-slate-500">
+            <div className="space-y-1">
+              {navHubs.map((hub) => (
+                <div key={hub.label} className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5">
+                  <Link
+                    href={hub.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-between text-sm font-bold text-slate-900 hover:text-blue-700"
+                  >
+                    <span>{hub.label}</span>
+                    <span className="text-[10px] text-blue-600 font-semibold">View Hub →</span>
+                  </Link>
+                  {hub.items && (
+                    <div className="grid grid-cols-1 gap-1 pt-2 border-t border-slate-200/50 mt-1.5">
+                      {hub.items.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <Link
+                            key={item.label}
+                            href={item.href}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-slate-700 hover:text-blue-700 hover:bg-white rounded-lg transition active:bg-blue-50"
+                          >
+                            <Icon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span className="font-medium">{item.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2 flex items-center justify-between text-xs text-slate-500 border-t border-slate-200/80">
               <Link
                 href="/admin/dashboard"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center gap-1.5 text-slate-700 hover:text-blue-700 font-semibold"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-900 text-white hover:bg-blue-900 font-semibold transition active:scale-[0.99]"
               >
                 <Lock className="w-3.5 h-3.5 text-slate-400" />
                 <span>Admin CMS Portal</span>
